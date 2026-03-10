@@ -7,9 +7,7 @@ export const register = async (req, res, next) => {
     const result = await authService.registerUser({ name, email, password });
     setCookies(res, result.accessToken, result.refreshToken);
     res.status(201).json({ success: true, user: result.user });
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };
 
 export const login = async (req, res, next) => {
@@ -18,9 +16,7 @@ export const login = async (req, res, next) => {
     const result = await authService.loginUser({ email, password });
     setCookies(res, result.accessToken, result.refreshToken);
     res.json({ success: true, user: result.user });
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };
 
 export const logout = async (req, res, next) => {
@@ -28,9 +24,7 @@ export const logout = async (req, res, next) => {
     await authService.logoutUser(req.user._id);
     clearCookies(res);
     res.json({ success: true, message: 'Logged out successfully' });
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };
 
 export const refresh = async (req, res, next) => {
@@ -39,9 +33,7 @@ export const refresh = async (req, res, next) => {
     const result = await authService.refreshAccessToken(refreshToken);
     setCookies(res, result.accessToken, result.refreshToken);
     res.json({ success: true, message: 'Token refreshed' });
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };
 
 export const getMe = async (req, res, next) => {
@@ -49,15 +41,9 @@ export const getMe = async (req, res, next) => {
     res.json({
       success: true,
       user: {
-        _id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role,
-        address: req.user.address,
-        phone: req.user.phone,
+        _id: req.user._id, name: req.user.name, email: req.user.email,
+        role: req.user.role, address: req.user.address, phone: req.user.phone,
       },
     });
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };

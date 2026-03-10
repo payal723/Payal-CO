@@ -27,17 +27,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = useCallback(async () => {
-    try { await authAPI.logout(); } catch { } finally { setUser(null); }
+    try { await authAPI.logout(); } catch {} finally { setUser(null); }
   }, []);
 
   return (
     <AuthContext.Provider value={{
-      user,
-      setUser, // exposed so ProfilePage can update after edit
-      loading,
-      login,
-      register,
-      logout,
+      user, setUser, loading, login, register, logout,
       isAdmin: user?.role === 'admin',
       isAuthenticated: !!user,
     }}>
