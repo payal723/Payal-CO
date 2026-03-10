@@ -17,25 +17,35 @@ const generateRefreshToken = (userId) => {
 export const setCookies = (res, accessToken, refreshToken) => {
   const isProduction = process.env.NODE_ENV === 'production';
 
-  res.cookie('accessToken', accessToken, {
+  const cookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
-    maxAge: 15 * 60 * 1000, // 15 minutes
+    secure: isProduction,          // HTTPS only in production
+    sameSite: isProduction ? 'none' : 'lax',  // 'none' for cross-domain
+  };
+
+  res.cookie('accessToken', accessToken, {
+    ...cookieOptions,
+    maxAge: 15 * 60 * 1000,
   });
 
   res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    ...cookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
 export const clearCookies = (res) => {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
+  const isProduction = process.env.NODE_ENV === 'production';
+  const options = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  };
+  res.clearCookie('accessToken', options);
+  res.clearCookie('refreshToken', options);
 };
+
+// };
 
 export const registerUser = async ({ name, email, password }) => {
   const existingUser = await User.findOne({ email });
