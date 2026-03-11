@@ -1,92 +1,110 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { adminAPI } from '../../api/index.js';
+import { Badge, PageSpinner, Card } from '../../components/ui/index.jsx';
+import AdminLayout from '../../components/admin/AdminLayout.jsx';
 
-const navItems = [
-  { path: '/admin', label: 'Dashboard', icon: '📊' },
-  { path: '/admin/products', label: 'Products', icon: '🛍️' },
-  { path: '/admin/orders', label: 'Orders', icon: '📦' },
-];
+const StatCard = ({ title, value, icon, color }) => (
+  <Card className="p-4 sm:p-5">
+    <div className="flex items-start justify-between">
+      <div className="min-w-0">
+        <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">{title}</p>
+        <p className={`text-2xl sm:text-3xl font-bold mt-1 ${color}`}>{value}</p>
+      </div>
+      <span className="text-2xl sm:text-3xl ml-2 flex-shrink-0">{icon}</span>
+    </div>
+  </Card>
+);
 
-export default function AdminLayout({ children }) {
-  const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+export default function AdminDashboard() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const isActive = (path) => location.pathname === path;
+  useEffect(() => {
+    adminAPI.getStats().then(({ data }) => {
+      setStats(data.stats);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <AdminLayout><PageSpinner /></AdminLayout>;
+  if (!stats) return <AdminLayout><div className="p-8 text-center text-gray-500">Failed to load stats. Please refresh.</div></AdminLayout>;
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] bg-gray-50">
+    <AdminLayout>
+      <h1 className="font-display text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-8">
+        Dashboard Overview
+      </h1>
 
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <StatCard title="Total Orders" value={stats?.totalOrders ?? 0} icon="📦" color="text-purple-700" />
+        <StatCard title="Revenue" value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`} icon="💰" color="text-green-700" />
+        <StatCard title="Products" value={stats?.totalProducts ?? 0} icon="🛍️" color="text-blue-700" />
+        <StatCard title="Customers" value={stats?.totalUsers ?? 0} icon="👥" color="text-orange-700" />
+      </div>
 
-      {/* Sidebar — desktop always visible, mobile as drawer */}
-      <aside className={`
-        fixed top-16 left-0 h-[calc(100vh-64px)] z-50 w-64 bg-white border-r border-gray-100 shadow-xl
-        transform transition-transform duration-300 ease-in-out
-        md:static md:translate-x-0 md:shadow-none md:w-56 md:flex-shrink-0 md:block
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Admin Panel</span>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="md:hidden text-gray-400 hover:text-gray-600 text-lg"
-          >✕</button>
-        </div>
-        <nav className="p-3 space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                ${isActive(item.path)
-                  ? 'bg-purple-50 text-purple-700'
-                  : 'text-gray-600 hover:bg-gray-50'}`}
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-          <div className="pt-4 border-t border-gray-100 mt-4">
-            <Link
-              to="/"
-              onClick={() => setSidebarOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              <span>🏪</span> View Store
+      {/* Order Status + Recent Orders */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-5 sm:mb-6">
+        <Card className="p-4 sm:p-5">
+          <h2 className="font-display text-base sm:text-lg font-bold text-gray-900 mb-4">Orders by Status</h2>
+          <div className="space-y-2.5">
+            {['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'].map((status) => (
+              <div key={status} className="flex items-center justify-between py-1">
+                <Badge label={status} />
+                <span className="font-bold text-gray-900 text-sm">
+                  {stats?.ordersByStatus?.[status] ?? 0}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-base sm:text-lg font-bold text-gray-900">Recent Orders</h2>
+            <Link to="/admin/orders" className="text-xs sm:text-sm text-purple-700 font-medium hover:underline">
+              View all
             </Link>
           </div>
-        </nav>
-      </aside>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* Mobile top bar */}
-        <div className="md:hidden bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 sticky top-16 z-30">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <span className="text-sm font-semibold text-gray-700">
-            {navItems.find(n => isActive(n.path))?.label || 'Admin'}
-          </span>
-        </div>
-
-        <main className="flex-1 p-3 sm:p-5 md:p-6 overflow-auto">
-          {children}
-        </main>
+          <div className="space-y-1">
+            {(stats?.recentOrders ?? []).map((order) => (
+              <Link
+                key={order._id}
+                to={`/orders/${order._id}`}
+                className="flex items-center justify-between hover:bg-gray-50 rounded-lg px-2 py-2.5 transition-colors"
+              >
+                <div className="min-w-0 mr-2">
+                  <p className="text-sm font-medium text-gray-900 truncate">{order.user?.name}</p>
+                  <p className="text-xs text-gray-500">#{order._id.slice(-8).toUpperCase()}</p>
+                </div>
+                <Badge label={order.orderStatus} />
+              </Link>
+            ))}
+          </div>
+        </Card>
       </div>
-    </div>
+
+      {/* Quick Links */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <Link to="/admin/products">
+          <Card className="p-4 sm:p-5 hover:border-purple-200 transition-colors cursor-pointer flex items-center gap-3 sm:gap-4">
+            <span className="text-2xl sm:text-3xl">🛍️</span>
+            <div>
+              <p className="font-semibold text-gray-900 text-sm sm:text-base">Manage Products</p>
+              <p className="text-xs sm:text-sm text-gray-500">Add, edit, or remove products</p>
+            </div>
+          </Card>
+        </Link>
+        <Link to="/admin/orders">
+          <Card className="p-4 sm:p-5 hover:border-purple-200 transition-colors cursor-pointer flex items-center gap-3 sm:gap-4">
+            <span className="text-2xl sm:text-3xl">📋</span>
+            <div>
+              <p className="font-semibold text-gray-900 text-sm sm:text-base">Manage Orders</p>
+              <p className="text-xs sm:text-sm text-gray-500">Update order status and track deliveries</p>
+            </div>
+          </Card>
+        </Link>
+      </div>
+    </AdminLayout>
   );
 }
