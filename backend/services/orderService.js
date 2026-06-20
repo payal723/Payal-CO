@@ -70,7 +70,6 @@ export const placeOrder = async (userId, { shippingAddress, notes }) => {
 
     await session.commitTransaction();
 
-    // Send confirmation email (after transaction — don't block on failure)
     try {
       const user = await User.findById(userId);
       if (user?.email) {

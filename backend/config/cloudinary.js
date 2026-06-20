@@ -6,7 +6,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Upload image buffer to cloudinary
 export const uploadImage = async (fileBuffer, folder = 'shopx/products') => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
@@ -25,7 +24,6 @@ export const uploadImage = async (fileBuffer, folder = 'shopx/products') => {
   });
 };
 
-// Delete image from cloudinary
 export const deleteImage = async (publicId) => {
   return cloudinary.uploader.destroy(publicId);
 };

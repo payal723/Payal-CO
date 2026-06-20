@@ -14,7 +14,7 @@ const cartItemSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    required: true, // Snapshot of price at time of adding
+    required: true, 
   },
 });
 
@@ -24,7 +24,7 @@ const cartSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      unique: true, // One cart per user
+      unique: true, 
     },
     items: [cartItemSchema],
     totalPrice: {

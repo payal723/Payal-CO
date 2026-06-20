@@ -14,7 +14,6 @@ export const changePassword = async (userId, currentPassword, newPassword) => {
 };
 
 export const updateProfile = async (userId, { name, email, phone, address }) => {
-  // Check if new email already taken by another user
   if (email) {
     const existing = await User.findOne({ email, _id: { $ne: userId } });
     if (existing) throw new AppError('Email already in use by another account', 409);

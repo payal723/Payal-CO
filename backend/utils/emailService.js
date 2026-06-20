@@ -10,7 +10,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Send order confirmation email
 export const sendOrderConfirmationEmail = async (order, user) => {
   const itemsHTML = order.items
     .map(

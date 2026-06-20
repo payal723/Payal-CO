@@ -2,7 +2,6 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const path = require('path');
 
-// Load .env manually from backend root
 import dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -17,8 +16,8 @@ console.log('FROM:', process.env.EMAIL_FROM);
 console.log('');
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',   // hardcoded for test
-  port: 587,                 // hardcoded for test
+  host: 'smtp.gmail.com',   
+  port: 587,                 
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
@@ -31,16 +30,16 @@ const transporter = nodemailer.createTransport({
 
 try {
   await transporter.verify();
-  console.log('✅ SMTP Connection successful!');
+  console.log(' SMTP Connection successful!');
 
   await transporter.sendMail({
     from: `Payal&Co <${process.env.EMAIL_USER}>`,
     to: process.env.EMAIL_USER,
     subject: 'Test - Payal&Co',
-    html: '<h1>Email working! 🎉</h1>',
+    html: '<h1>Email working! </h1>',
   });
 
-  console.log('✅ Test email sent! Check inbox of:', process.env.EMAIL_USER);
+  console.log(' Test email sent! Check inbox of:', process.env.EMAIL_USER);
 } catch (err) {
-  console.log('❌ ERROR:', err.message);
+  console.log(' ERROR:', err.message);
 }
